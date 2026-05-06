@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training">
+<meta name="theme-color" content="#0a0a0a">
+<title>Training App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg2: #141414;
+  --bg3: #1e1e1e;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #555;
+  --green: #4ade80;
+  --green-bg: rgba(74,222,128,0.1);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96,165,250,0.1);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251,191,36,0.1);
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { background: var(--bg); }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  padding-bottom: calc(72px + var(--safe-bottom));
+}
+
+/* ── NAV BAR ── */
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  height: calc(64px + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  z-index: 100;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0 0;
+  gap: 4px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--text3);
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-item.active { color: var(--text); }
+.nav-icon { font-size: 20px; line-height: 1; }
+
+/* ── SCREENS ── */
+.screen { display: none; padding: calc(var(--safe-top) + 20px) 16px 20px; }
+.screen.active { display: block; }
+
+/* ── HEADER ── */
+.header { margin-bottom: 24px; }
+.header-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; font-family: var(--mono); }
+.header-title { font-size: 28px; font-weight: 300; color: var(--text); line-height: 1.1; }
+.header-title strong { font-weight: 600; }
+
+/* ── METRICS ── */
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.metric {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.metric-label { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; font-family: var(--mono); }
+.metric-val { font-size: 26px; font-weight: 300; color: var(--text); line-height: 1; }
+.metric-val span { font-size: 13px; color: var(--text2); }
+.metric-sub { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: var(--mono); }
+
+/* countdown accent */
+.metric.accent { background: var(--amber-bg); border-color: rgba(251,191,36,0.2); }
+.metric.accent .metric-val { color: var(--amber); }
+
+/* ── SECTION ── */
+.section-label { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; font-family: var(--mono); }
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+/* ── WEEK BARS ── */
+.week-bar { display: grid; grid-template-columns: 52px 1fr 44px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.week-bar:last-child { border-bottom: none; }
+.week-bar-label { font-size: 12px; font-weight: 500; color: var(--text2); font-family: var(--mono); }
+.week-bar-label.now { color: var(--amber); }
+.bar-track { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+.week-bar-pct { font-size: 11px; font-weight: 500; text-align: right; font-family: var(--mono); }
+
+/* ── TODAY'S SESSIONS ── */
+.session-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.session-item:last-child { border-bottom: none; }
+.session-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.dot-easy { background: var(--green); }
+.dot-mod { background: var(--blue); }
+.dot-hard { background: var(--red); }
+.dot-mixed { background: var(--amber); }
+.session-info { flex: 1; }
+.session-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.session-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.session-badge { font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 20px; flex-shrink: 0; margin-top: 2px; }
+.badge-done { background: var(--green-bg); color: var(--green); }
+.badge-today { background: var(--amber-bg); color: var(--amber); }
+.badge-pend { color: var(--text3); }
+
+/* ── LOG FORM ── */
+.form-section { margin-bottom: 20px; }
+.form-label { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; display: block; font-family: var(--mono); }
+select, input[type=text], input[type=number], textarea {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  padding: 12px 14px;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  transition: border-color 0.2s;
+}
+select:focus, input:focus, textarea:focus { border-color: rgba(255,255,255,0.3); }
+textarea { resize: none; min-height: 80px; line-height: 1.5; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* feel selector */
+.feel-row { display: flex; gap: 8px; }
+.feel-btn {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.feel-btn.selected { border-color: rgba(255,255,255,0.4); background: var(--bg3); }
+
+/* buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  width: 100%;
+}
+.btn:active { opacity: 0.7; }
+.btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+.btn-row { display: flex; gap: 10px; }
+.btn-row .btn { flex: 1; }
+
+/* ── HISTORY ── */
+.filters { display: flex; gap: 8px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+.filter-chip {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+.filter-chip.active { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+
+.log-entry {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.log-entry:last-child { border-bottom: none; }
+.log-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.log-title { font-size: 14px; font-weight: 500; color: var(--text); }
+.log-week { font-size: 10px; font-weight: 500; color: var(--text3); font-family: var(--mono); }
+.log-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+.log-stat { font-size: 12px; color: var(--text2); font-family: var(--mono); }
+.log-note { font-size: 12px; color: var(--text3); margin-top: 6px; line-height: 1.4; }
+.log-feel { font-size: 14px; }
+.del-btn { font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 2px 0 2px 8px; }
+
+/* ── PLAN ── */
+.week-tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+.week-tab {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: var(--mono);
+}
+.week-tab.active { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+.week-tab.race { color: var(--red); border-color: rgba(248,113,113,0.3); }
+.week-tab.race.active { background: var(--red-bg); }
+
+.plan-day { display: grid; grid-template-columns: 60px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.plan-day:last-child { border-bottom: none; }
+.plan-dayname { font-size: 11px; color: var(--text3); font-family: var(--mono); line-height: 1.3; }
+.plan-session { color: var(--text); line-height: 1.3; }
+.plan-race { color: var(--red); font-weight: 600; }
+.plan-vol { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-bottom: 12px; }
+
+/* ── IMPORT ── */
+.drop-zone {
+  border: 1.5px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.drop-zone:active { background: var(--bg3); }
+.drop-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.drop-sub { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 13px; line-height: 1.6; }
+.empty-icon { font-size: 32px; margin-bottom: 10px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: calc(80px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--text);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 200;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── INTENSITY BADGE ── */
+.ibadge { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+.ibadge-easy { background: var(--green-bg); color: var(--green); }
+.ibadge-moderate { background: var(--blue-bg); color: var(--blue); }
+.ibadge-hard { background: var(--red-bg); color: var(--red); }
+.ibadge-mixed { background: var(--amber-bg); color: var(--amber); }
+
+.quick-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.quick-btn {
+  width: 100%;
+  font-family: var(--font);
+  font-size: 13px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text2);
+  text-align: left;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- DASHBOARD -->
+<div id="screen-dash" class="screen active">
+  <div class="header">
+    <div class="header-label">Hybrid Training</div>
+    <div class="header-title">Week <strong id="h-week">5</strong> of 6</div>
+  </div>
+  <div class="metrics" id="dash-metrics"></div>
+  <div class="section-label">Phase progress</div>
+  <div class="card" id="dash-weeks"></div>
+  <div class="section-label">This week</div>
+  <div class="card" id="dash-thisweek"></div>
+</div>
+
+<!-- LOG -->
+<div id="screen-log" class="screen">
+  <div class="header">
+    <div class="header-label">Log session</div>
+    <div class="header-title">Add <strong>workout</strong></div>
+  </div>
+  <div class="form-section">
+    <label class="form-label">Week</label>
+    <select id="f-week">
+      <option value="1">Week 1 — Mar 30–Apr 5</option>
+      <option value="2">Week 2 — Apr 6–12</option>
+      <option value="3">Week 3 — Apr 13–19</option>
+      <option value="4">Week 4 — Apr 20–26</option>
+      <option value="5" selected>Week 5 — Apr 27–May 3</option>
+      <option value="6">Week 6 — May 4–10</option>
+    </select>
+  </div>
+  <div class="form-section">
+    <label class="form-label">Day</label>
+    <select id="f-day">
+      <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+      <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+    </select>
+  </div>
+  <div class="form-section">
+    <label class="form-label">Session type</label>
+    <select id="f-session">
+      <option>Zone 2 run</option>
+      <option>Tempo run</option>
+      <option>Track reps</option>
+      <option>Fitstop PERFORM</option>
+      <option>Fitstop LIFT</option>
+      <option>Easy bike</option>
+      <option>Compromised run</option>
+      <option>Recovery + Mobility</option>
+      <option>5K time test</option>
+      <option>Rest / skipped</option>
+    </select>
+  </div>
+  <div class="form-section">
+    <label class="form-label">Intensity</label>
+    <select id="f-intensity">
+      <option value="easy">Easy</option>
+      <option value="moderate">Moderate</option>
+      <option value="hard">Hard</option>
+      <option value="mixed">Mixed</option>
+    </select>
+  </div>
+  <div class="grid2" style="gap:10px;margin-bottom:20px;">
+    <div>
+      <label class="form-label">Pace (min/km)</label>
+      <input type="text" id="f-pace" placeholder="5:13">
+    </div>
+    <div>
+      <label class="form-label">Distance (km)</label>
+      <input type="number" id="f-dist" step="0.01" placeholder="6.5">
+    </div>
+  </div>
+  <div class="grid2" style="gap:10px;margin-bottom:20px;">
+    <div>
+      <label class="form-label">Avg HR (bpm)</label>
+      <input type="number" id="f-hr" placeholder="138">
+    </div>
+    <div>
+      <label class="form-label">Duration (min)</label>
+      <input type="number" id="f-dur" placeholder="45">
+    </div>
+  </div>
+  <div class="form-section">
+    <label class="form-label">How did it feel?</label>
+    <div class="feel-row" id="feel-row">
+      <button class="feel-btn" onclick="setFeel(1,this)">😩</button>
+      <button class="feel-btn" onclick="setFeel(2,this)">😤</button>
+      <button class="feel-btn" onclick="setFeel(3,this)">😐</button>
+      <button class="feel-btn" onclick="setFeel(4,this)">😊</button>
+      <button class="feel-btn" onclick="setFeel(5,this)">🔥</button>
+    </div>
+  </div>
+  <div class="form-section">
+    <label class="form-label">Notes</label>
+    <textarea id="f-notes" placeholder="Splits, weights, observations…"></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="saveSession()">Save session</button>
+    <button class="btn" onclick="clearForm()">Clear</button>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="screen-history" class="screen">
+  <div class="header">
+    <div class="header-label">Training log</div>
+    <div class="header-title">All <strong>sessions</strong></div>
+  </div>
+  <div class="filters" id="week-filters"></div>
+  <div class="card" id="history-list"></div>
+</div>
+
+<!-- PLAN -->
+<div id="screen-plan" class="screen">
+  <div class="header">
+    <div class="header-label">6-week block</div>
+    <div class="header-title">Training <strong>plan</strong></div>
+  </div>
+  <div class="week-tabs" id="plan-tabs"></div>
+  <div class="plan-vol" id="plan-vol"></div>
+  <div class="card" id="plan-content"></div>
+  <button class="btn" style="margin-top:4px;" onclick="goLogWeek()">+ Log a session for this week</button>
+</div>
+
+<!-- IMPORT -->
+<div id="screen-import" class="screen">
+  <div class="header">
+    <div class="header-label">Garmin Connect</div>
+    <div class="header-title">Import <strong>data</strong></div>
+  </div>
+  <div class="drop-zone" onclick="document.getElementById('csv-input').click()"
+       ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+    <div style="font-size:32px;margin-bottom:10px;">📂</div>
+    <div class="drop-title">Upload Activities.csv</div>
+    <div class="drop-sub">From Garmin Connect → Activities → Export CSV</div>
+  </div>
+  <input type="file" id="csv-input" accept=".csv,.json" style="display:none" onchange="handleFile(this.files[0])">
+
+  <div id="import-preview" style="display:none;margin-top:16px;">
+    <div class="section-label" id="preview-summary"></div>
+    <div class="card" id="preview-list"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="confirmImport()">Import all</button>
+      <button class="btn" onclick="resetImport()">Cancel</button>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <div class="section-label">How to export from Garmin</div>
+    <div class="card">
+      <div class="session-item">
+        <div style="min-width:20px;font-size:14px;font-weight:600;color:var(--text3);">1</div>
+        <div class="session-info"><div class="session-name" style="font-size:13px;">Open Garmin Connect</div><div class="session-meta">connect.garmin.com → sign in</div></div>
+      </div>
+      <div class="session-item">
+        <div style="min-width:20px;font-size:14px;font-weight:600;color:var(--text3);">2</div>
+        <div class="session-info"><div class="session-name" style="font-size:13px;">Go to Activities</div><div class="session-meta">Left sidebar → All Activities</div></div>
+      </div>
+      <div class="session-item">
+        <div style="min-width:20px;font-size:14px;font-weight:600;color:var(--text3);">3</div>
+        <div class="session-info"><div class="session-name" style="font-size:13px;">Export CSV</div><div class="session-meta">Top right button → Export CSV</div></div>
+      </div>
+      <div class="session-item" style="border-bottom:none;">
+        <div style="min-width:20px;font-size:14px;font-weight:600;color:var(--text3);">4</div>
+        <div class="session-info"><div class="session-name" style="font-size:13px;">Upload here</div><div class="session-meta">Tap the box above to import</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-item active" onclick="showScreen('dash',this)">
+    <span class="nav-icon">⬡</span>Dashboard
+  </button>
+  <button class="nav-item" onclick="showScreen('log',this)">
+    <span class="nav-icon">＋</span>Log
+  </button>
+  <button class="nav-item" onclick="showScreen('history',this)">
+    <span class="nav-icon">≡</span>History
+  </button>
+  <button class="nav-item" onclick="showScreen('plan',this)">
+    <span class="nav-icon">◫</span>Plan
+  </button>
+  <button class="nav-item" onclick="showScreen('import',this)">
+    <span class="nav-icon">↑</span>Import
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const PLAN = {
+  1:{label:'W1',range:'Mar 30–Apr 5',vol:'~25km · 88% easy/mod, 12% hard',sessions:[
+    {day:'Mon Mar 30',session:'Fitstop PERFORM or Zone 2+Strides',intensity:'mixed'},
+    {day:'Tue Mar 31',session:'Fitstop LIFT or Zone 2+Strides',intensity:'moderate'},
+    {day:'Wed Apr 1',session:'Tempo Run or Zone 2+Strides',intensity:'moderate'},
+    {day:'Thu Apr 2',session:'Fitstop / Zone 2 / Easy Bike',intensity:'easy'},
+    {day:'Fri Apr 3',session:'Fitstop LIFT or Rest',intensity:'moderate'},
+    {day:'Sat Apr 4',session:'TRACK – 6×400m Aerobic Speed',intensity:'hard'},
+    {day:'Sun Apr 5',session:'Recovery + Mobility',intensity:'easy'},
+  ]},
+  2:{label:'W2',range:'Apr 6–12',vol:'~28km · progressive overload',sessions:[
+    {day:'Mon Apr 6',session:'Fitstop PERFORM or Zone 2+Strides',intensity:'mixed'},
+    {day:'Tue Apr 7',session:'Fitstop LIFT or Zone 2+Strides',intensity:'moderate'},
+    {day:'Wed Apr 8',session:'Tempo Run or Zone 2+Strides',intensity:'moderate'},
+    {day:'Thu Apr 9',session:'Fitstop / Zone 2 / Easy Bike',intensity:'easy'},
+    {day:'Fri Apr 10',session:'Fitstop LIFT or Rest',intensity:'moderate'},
+    {day:'Sat Apr 11',session:'COMPROMISED RUN – Short Easy Course',intensity:'hard'},
+    {day:'Sun Apr 12',session:'Recovery + Mobility',intensity:'easy'},
+  ]},
+  3:{label:'W3',range:'Apr 13–19',vol:'~30km · building phase',sessions:[
+    {day:'Mon Apr 13',session:'Fitstop PERFORM or Zone 2+Strides',intensity:'mixed'},
+    {day:'Tue Apr 14',session:'Fitstop LIFT or Zone 2+Strides',intensity:'moderate'},
+    {day:'Wed Apr 15',session:'Tempo Run or Zone 2+Strides',intensity:'moderate'},
+    {day:'Thu Apr 16',session:'Fitstop / Zone 2 / Easy Bike',intensity:'easy'},
+    {day:'Fri Apr 17',session:'Fitstop LIFT or Rest',intensity:'moderate'},
+    {day:'Sat Apr 18',session:'TRACK – 8×400m Aerobic Speed',intensity:'hard'},
+    {day:'Sun Apr 19',session:'Recovery + Mobility',intensity:'easy'},
+  ]},
+  4:{label:'W4',range:'Apr 20–26',vol:'~31km · peak load week',sessions:[
+    {day:'Mon Apr 20',session:'Fitstop PERFORM or Zone 2+Strides',intensity:'mixed'},
+    {day:'Tue Apr 21',session:'Fitstop LIFT or Zone 2+Strides',intensity:'moderate'},
+    {day:'Wed Apr 22',session:'Tempo Run or Zone 2+Strides',intensity:'moderate'},
+    {day:'Thu Apr 23',session:'Fitstop / Zone 2 / Easy Bike',intensity:'easy'},
+    {day:'Fri Apr 24',session:'Fitstop LIFT or Rest',intensity:'moderate'},
+    {day:'Sat Apr 25',session:'COMPROMISED RUN – Extended Course',intensity:'hard'},
+    {day:'Sun Apr 26',session:'Recovery + Mobility',intensity:'easy'},
+  ]},
+  5:{label:'W5',range:'Apr 27–May 3',vol:'~33km · 82% easy/mod, 18% hard · peak Zone 2',sessions:[
+    {day:'Mon Apr 27',session:'Fitstop PERFORM or Zone 2+Strides',intensity:'mixed'},
+    {day:'Tue Apr 28',session:'Fitstop LIFT or Zone 2+Strides (50 min)',intensity:'moderate'},
+    {day:'Wed Apr 29',session:'PEAK TEMPO – 28 min @ 4:10–4:20/km',intensity:'hard'},
+    {day:'Thu Apr 30',session:'Fitstop / Zone 2 / Easy Bike',intensity:'easy'},
+    {day:'Fri May 1',session:'Fitstop LIFT or Rest',intensity:'moderate'},
+    {day:'Sat May 2',session:'TRACK – 4×800m Aerobic Speed',intensity:'hard'},
+    {day:'Sun May 3',session:'Recovery + Mobility (45–60 min)',intensity:'easy'},
+  ]},
+  6:{label:'W6 🏁',range:'May 4–10 · Deload → Race',vol:'Taper week → 5K TIME TEST Saturday May 9',sessions:[
+    {day:'Mon May 4',session:'Fitstop PERFORM or Zone 2 Only',intensity:'mixed'},
+    {day:'Tue May 5',session:'Fitstop LIFT or Zone 2 Only',intensity:'moderate'},
+    {day:'Wed May 6',session:'Zone 2 Only – Deload',intensity:'easy'},
+    {day:'Thu May 7',session:'Easy Bike or Rest',intensity:'easy'},
+    {day:'Fri May 8',session:'Fitstop LIFT or Rest',intensity:'moderate'},
+    {day:'Sat May 9',session:'5K TIME TEST – Full Effort',intensity:'hard',race:true},
+    {day:'Sun May 10',session:'Recovery + Mobility – Extended',intensity:'easy'},
+  ]},
+};
+
+const SEED = [
+  {week:'1',day:'Monday',session:'Fitstop PERFORM or Zone 2+Strides',intensity:'mixed',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option B completed.',ts:1743379200000,garminId:'seed-1-1'},
+  {week:'1',day:'Tuesday',session:'Fitstop LIFT',intensity:'moderate',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option A – LIFT.',ts:1743465600000,garminId:'seed-1-2'},
+  {week:'1',day:'Wednesday',session:'Zone 2 run',intensity:'easy',pace:'',dist:'',hr:'',dur:'',feel:3,notes:'Option C – Pure Zone 2.',ts:1743552000000,garminId:'seed-1-3'},
+  {week:'1',day:'Thursday',session:'Easy bike',intensity:'easy',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option B.',ts:1743638400000,garminId:'seed-1-4'},
+  {week:'1',day:'Friday',session:'Fitstop LIFT',intensity:'moderate',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option A.',ts:1743724800000,garminId:'seed-1-5'},
+  {week:'1',day:'Saturday',session:'Track reps',intensity:'hard',pace:'',dist:'',hr:'',dur:'',feel:5,notes:'6×400m.',ts:1743811200000,garminId:'seed-1-6'},
+  {week:'2',day:'Monday',session:'Fitstop PERFORM or Zone 2+Strides',intensity:'mixed',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option B.',ts:1743984000000,garminId:'seed-2-1'},
+  {week:'2',day:'Tuesday',session:'Fitstop LIFT',intensity:'moderate',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option A.',ts:1744070400000,garminId:'seed-2-2'},
+  {week:'2',day:'Wednesday',session:'Tempo run',intensity:'moderate',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option A.',ts:1744156800000,garminId:'seed-2-3'},
+  {week:'2',day:'Thursday',session:'Zone 2 run',intensity:'easy',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option A.',ts:1744243200000,garminId:'seed-2-4'},
+  {week:'2',day:'Friday',session:'Fitstop LIFT',intensity:'moderate',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option A.',ts:1744329600000,garminId:'seed-2-5'},
+  {week:'2',day:'Saturday',session:'Compromised run',intensity:'hard',pace:'',dist:'',hr:'',dur:'',feel:3,notes:'Short easy course.',ts:1744416000000,garminId:'seed-2-6'},
+  {week:'3',day:'Monday',session:'Fitstop PERFORM or Zone 2+Strides',intensity:'mixed',pace:'',dist:'',hr:'',dur:'',feel:4,notes:'Option B.',ts:1744588800000,garminId:'seed-3-1'},
+];
+
+let sessions = [];
+let selectedFeel = null;
+let currentPlanWeek = 5;
+let filterWeek = 'all';
+let pendingImport = [];
+
+// ── STORAGE ───────────────────────────────────────────────────────────────
+async function load() {
+  try {
+    const raw = localStorage.getItem('training-sessions');
+    if (raw) { sessions = JSON.parse(raw); }
+    else { sessions = [...SEED]; save(); }
+  } catch(e) { sessions = [...SEED]; }
+  renderAll();
+}
+
+function save() {
+  try { localStorage.setItem('training-sessions', JSON.stringify(sessions)); } catch(e) {}
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderDashboard();
+  renderHistory();
+  renderPlan(currentPlanWeek);
+  renderPlanTabs();
+  renderWeekFilters();
+}
+
+function dot(i) {
+  return `<div class="session-dot dot-${i==='moderate'?'mod':i}"></div>`;
+}
+function ibadge(i) {
+  return `<span class="ibadge ibadge-${i}">${i}</span>`;
+}
+function feelEmoji(f) { return ['','😩','😤','😐','😊','🔥'][f]||''; }
+
+function renderDashboard() {
+  const target = new Date('2026-05-09');
+  const days = Math.max(0, Math.ceil((target - new Date()) / 86400000));
+
+  const wc = {};
+  for(let w=1;w<=6;w++) wc[w]=0;
+  sessions.forEach(s => { if(s.week) wc[parseInt(s.week)]=(wc[parseInt(s.week)]||0)+1; });
+  const total = Object.values(wc).reduce((a,b)=>a+b,0);
+  const tempo = sessions.find(s=>s.session==='Tempo run'&&s.pace);
+
+  document.getElementById('dash-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Sessions logged</div><div class="metric-val">${total}</div><div class="metric-sub">all weeks</div></div>
+    <div class="metric accent"><div class="metric-label">Days to 5K</div><div class="metric-val">${days}</div><div class="metric-sub">May 9 · race day</div></div>
+    <div class="metric"><div class="metric-label">Peak tempo</div><div class="metric-val">${tempo?tempo.pace:'—'}<span>/km</span></div><div class="metric-sub">28 min W5 Wed</div></div>
+    <div class="metric"><div class="metric-label">This week</div><div class="metric-val">${wc[5]}<span>/7</span></div><div class="metric-sub">W5 sessions</div></div>
+  `;
+
+  const colors = ['#4ade80','#4ade80','#60a5fa','#555','#fbbf24','#555'];
+  let html = '';
+  for(let w=1;w<=6;w++){
+    const done=wc[w], pct=Math.min(100,Math.round(done/7*100));
+    const isNow=w===5;
+    html+=`<div class="week-bar">
+      <div class="week-bar-label ${isNow?'now':''}">W${w}${isNow?' ←':''}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(w===6&&done===0?0:2,pct)}%;background:${colors[w-1]};"></div></div>
+      <div class="week-bar-pct" style="color:${colors[w-1]};">${w===6&&done===0?'—':pct+'%'}</div>
+    </div>`;
+  }
+  document.getElementById('dash-weeks').innerHTML = html;
+
+  const w5 = PLAN[5].sessions;
+  const w5days = sessions.filter(s=>s.week==='5').map(s=>s.day);
+  let tw='';
+  w5.forEach(p=>{
+    const dayShort=p.day.split(' ')[0];
+    const isToday=p.day.includes('May 3');
+    const done=w5days.includes(dayShort);
+    tw+=`<div class="session-item">
+      ${dot(p.intensity)}
+      <div class="session-info">
+        <div class="session-name" style="font-size:13px;">${p.session}</div>
+        <div class="session-meta">${p.day}</div>
+      </div>
+      ${done?'<span class="session-badge badge-done">done</span>':isToday?'<span class="session-badge badge-today">today</span>':''}
+    </div>`;
+  });
+  document.getElementById('dash-thisweek').innerHTML = tw;
+}
+
+function renderWeekFilters() {
+  const chips = ['all','1','2','3','4','5','6'].map(w=>{
+    const label = w==='all'?'All':'W'+w;
+    return `<button class="filter-chip ${filterWeek===w?'active':''}" onclick="setFilter('${w}')">${label}</button>`;
+  });
+  document.getElementById('week-filters').innerHTML = chips.join('');
+}
+
+function setFilter(w) { filterWeek=w; renderWeekFilters(); renderHistory(); }
+
+function renderHistory() {
+  let filtered = [...sessions].sort((a,b)=>b.ts-a.ts);
+  if(filterWeek!=='all') filtered=filtered.filter(s=>s.week===filterWeek);
+
+  if(!filtered.length){
+    document.getElementById('history-list').innerHTML='<div class="empty"><div class="empty-icon">📋</div>No sessions yet.<br>Head to Log to add your first entry.</div>';
+    return;
+  }
+
+  document.getElementById('history-list').innerHTML = filtered.map(s=>{
+    const idx = sessions.indexOf(s);
+    const stats=[s.pace?s.pace+'/km':'',s.dist?s.dist+'km':'',s.hr?s.hr+'bpm':'',s.dur?s.dur+'min':''].filter(Boolean);
+    const dateStr=new Date(s.ts).toLocaleDateString('en-AU',{weekday:'short',month:'short',day:'numeric'});
+    return `<div class="log-entry">
+      <div class="log-top">
+        <div>
+          <div class="log-title">${s.session} ${ibadge(s.intensity)}</div>
+          <div class="log-week">W${s.week} · ${s.day} · ${dateStr} ${s.feel?feelEmoji(s.feel):''}</div>
+        </div>
+        <button class="del-btn" onclick="deleteSession(${idx})">✕</button>
+      </div>
+      ${stats.length?`<div class="log-stats">${stats.map(x=>`<span class="log-stat">${x}</span>`).join('')}</div>`:''}
+      ${s.notes?`<div class="log-note">${s.notes}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderPlanTabs() {
+  const tabs = Object.entries(PLAN).map(([w,p])=>{
+    const isRace = w==='6';
+    return `<button class="week-tab ${isRace?'race':''} ${currentPlanWeek===parseInt(w)?'active':''}" onclick="renderPlan(${w})">${p.label}</button>`;
+  });
+  document.getElementById('plan-tabs').innerHTML = tabs.join('');
+}
+
+function renderPlan(w) {
+  currentPlanWeek = parseInt(w);
+  renderPlanTabs();
+  const pw = PLAN[w];
+  const loggedDays = sessions.filter(s=>s.week===String(w)).map(s=>s.day);
+  document.getElementById('plan-vol').textContent = pw.vol;
+
+  let html = pw.sessions.map(p=>{
+    const dayShort = p.day.split(' ')[0];
+    const done = loggedDays.includes(dayShort);
+    const isRace = p.race;
+    return `<div class="plan-day">
+      <div class="plan-dayname">${p.day.replace(' ','\n')}</div>
+      <div class="plan-session ${isRace?'plan-race':''}">${dot(p.intensity)} ${p.session}</div>
+      <div>${done?'<span class="ibadge ibadge-easy">done</span>':'<span style="color:var(--text3);font-size:11px;">—</span>'}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('plan-content').innerHTML = html;
+}
+
+// ── FORM ──────────────────────────────────────────────────────────────────
+function setFeel(v, btn) {
+  selectedFeel = v;
+  document.querySelectorAll('.feel-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function saveSession() {
+  const week = document.getElementById('f-week').value;
+  const day = document.getElementById('f-day').value;
+  const session = document.getElementById('f-session').value;
+  const intensity = document.getElementById('f-intensity').value;
+  const pace = document.getElementById('f-pace').value.trim();
+  const dist = document.getElementById('f-dist').value.trim();
+  const hr = document.getElementById('f-hr').value.trim();
+  const dur = document.getElementById('f-dur').value.trim();
+  const notes = document.getElementById('f-notes').value.trim();
+
+  sessions.unshift({week,day,session,intensity,pace,dist,hr,dur,feel:selectedFeel,notes,ts:Date.now()});
+  save();
+  clearForm();
+  renderAll();
+  toast('Session saved 🔥');
+  showScreen('history', document.querySelectorAll('.nav-item')[2]);
+}
+
+function clearForm() {
+  ['f-pace','f-dist','f-hr','f-dur','f-notes'].forEach(id=>document.getElementById(id).value='');
+  selectedFeel=null;
+  document.querySelectorAll('.feel-btn').forEach(b=>b.classList.remove('selected'));
+}
+
+function deleteSession(idx) {
+  sessions.splice(idx,1);
+  save();
+  renderAll();
+  toast('Removed');
+}
+
+function goLogWeek() {
+  document.getElementById('f-week').value = String(currentPlanWeek);
+  showScreen('log', document.querySelectorAll('.nav-item')[1]);
+}
+
+// ── CSV IMPORT ────────────────────────────────────────────────────────────
+const WEEKS_MAP = [
+  ['1','2026-03-30','2026-04-05'],
+  ['2','2026-04-06','2026-04-12'],
+  ['3','2026-04-13','2026-04-19'],
+  ['4','2026-04-20','2026-04-26'],
+  ['5','2026-04-27','2026-05-03'],
+  ['6','2026-05-04','2026-05-10'],
+];
+
+function weekFor(d) {
+  for(const [w,ws,we] of WEEKS_MAP) if(ws<=d&&d<=we) return w;
+  return null;
+}
+function dayName(d) { return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][new Date(d+'T12:00:00').getDay()]; }
+function classifyCSV(row) {
+  const t=row['Activity Type']?.toLowerCase()||'';
+  const n=row['Title']?.toLowerCase()||'';
+  const hr=parseInt(row['Avg HR'])||0;
+  if(t.includes('strength')) return ['Fitstop LIFT','moderate'];
+  if(t.includes('cycling')||t.includes('indoor cycling')) return ['Easy bike','easy'];
+  if(t.includes('hiit')) return ['Fitstop PERFORM','mixed'];
+  if(t.includes('multisport')) return ['Fitstop PERFORM','mixed'];
+  if(t.includes('run')) {
+    if(n.includes('tempo')||n.includes('threshold')) return ['Tempo run','hard'];
+    if(n.includes('track')||n.includes('interval')||n.includes('x/')||n.includes('400m')||n.includes('800m')) return ['Track reps','hard'];
+    if(hr>=155) return ['Tempo run','hard'];
+    return ['Zone 2 run', hr<140?'easy':'moderate'];
+  }
+  return ['Zone 2 run','easy'];
+}
+function parseTime(t) {
+  if(!t||t==='--') return '';
+  const p=t.split(':');
+  try {
+    if(p.length===3) return String(Math.round(parseInt(p[0])*60+parseInt(p[1])+parseFloat(p[2])/60));
+    if(p.length===2) return String(Math.round(parseInt(p[0])+parseInt(p[1])/60));
+  } catch(e){}
+  return '';
+}
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h=>h.replace(/\r/,'').trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map(line=>{
+    const vals=[]; let cur='', inQ=false;
+    for(const ch of line){if(ch==='"'){inQ=!inQ;}else if(ch===','&&!inQ){vals.push(cur);cur='';}else{cur+=ch;}}
+    vals.push(cur);
+    const row={};
+    headers.forEach((h,i)=>{ row[h]=(vals[i]||'').replace(/\r/,'').trim().replace(/^"|"$/g,''); });
+    return row;
+  });
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const file=e.dataTransfer?.files?.[0];
+  if(file) handleFile(file);
+}
+
+function handleFile(file) {
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    if(file.name.endsWith('.json')) {
+      try { pendingImport=JSON.parse(text); showPreview(); } catch(e){ toast('Invalid JSON file'); }
+    } else {
+      const rows=parseCSV(text);
+      pendingImport=[];
+      rows.forEach(row=>{
+        const d=row['Date']?.slice(0,10);
+        if(!d) return;
+        const week=weekFor(d);
+        if(!week) return;
+        const [session,intensity]=classifyCSV(row);
+        const dist=parseFloat(row['Distance']?.replace(',',''))||0;
+        pendingImport.push({
+          week, day:dayName(d), date:d, session, intensity,
+          pace:row['Avg Pace']&&row['Avg Pace']!=='--'?row['Avg Pace']:'',
+          dist:dist>0?String(Math.round(dist*100)/100):'',
+          hr:row['Avg HR']&&row['Avg HR']!=='--'?row['Avg HR']:'',
+          dur:parseTime(row['Time']),
+          feel:null, notes:row['Title']||'',
+          ts:new Date(row['Date']||d).getTime()||Date.now(),
+          garminId:'csv-'+row['Date'],
+        });
+      });
+      showPreview();
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showPreview() {
+  if(!pendingImport.length){ toast('No activities found in training block'); return; }
+  const wc={};
+  pendingImport.forEach(e=>{ wc[e.week]=(wc[e.week]||0)+1; });
+  const summary=`${pendingImport.length} activities — `+Object.entries(wc).sort().map(([w,c])=>`W${w}: ${c}`).join(' · ');
+  document.getElementById('preview-summary').textContent=summary;
+  document.getElementById('preview-list').innerHTML=pendingImport.slice(0,10).map(e=>
+    `<div class="session-item"><div class="session-info">
+      <div class="session-name" style="font-size:13px;">W${e.week} ${e.day.slice(0,3)} — ${e.session} ${ibadge(e.intensity)}</div>
+      <div class="session-meta">${[e.pace?e.pace+'/km':'',e.dist?e.dist+'km':'',e.hr?e.hr+'bpm':''].filter(Boolean).join(' · ')||e.notes.slice(0,40)}</div>
+    </div></div>`
+  ).join('')+(pendingImport.length>10?`<div style="font-size:12px;color:var(--text3);padding:8px 0;">…and ${pendingImport.length-10} more</div>`:'');
+  document.getElementById('import-preview').style.display='block';
+}
+
+function confirmImport() {
+  const existIds=new Set(sessions.map(s=>s.garminId).filter(Boolean));
+  const toAdd=pendingImport.filter(e=>!existIds.has(e.garminId));
+  sessions=[...toAdd,...sessions].sort((a,b)=>b.ts-a.ts);
+  save();
+  renderAll();
+  resetImport();
+  toast(`${toAdd.length} sessions imported ✓`);
+}
+
+function resetImport() {
+  pendingImport=[];
+  document.getElementById('import-preview').style.display='none';
+  document.getElementById('csv-input').value='';
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function showScreen(id, btn) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='history') renderHistory();
+}
+
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+load();
+</script>
+
+<!-- PWA SERVICE WORKER -->
+<script>
+if('serviceWorker' in navigator) {
+  const SW = `
+const CACHE='training-v1';
+const ASSETS=['/'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/')))));
+  `;
+  const blob=new Blob([SW],{type:'application/javascript'});
+  const url=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url).catch(()=>{});
+}
+</script>
+
+<!-- PWA MANIFEST -->
+<script>
+const manifest={
+  name:'Hybrid Training',
+  short_name:'Training',
+  start_url:'.',
+  display:'standalone',
+  background_color:'#0a0a0a',
+  theme_color:'#0a0a0a',
+  icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="%230a0a0a"/><text y=".9em" font-size="80" x="10">⬡</text></svg>',sizes:'any',type:'image/svg+xml'}]
+};
+const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+const url=URL.createObjectURL(blob);
+document.head.insertAdjacentHTML('beforeend',`<link rel="manifest" href="${url}">`);
+</script>
+
+</body>
+</html>
